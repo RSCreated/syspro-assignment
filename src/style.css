@@ -3,9 +3,25 @@ body {
     padding: 0;
     outline: 0;
     font-family: Arial, Helvetica, sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
 }
+
 main {
+    flex: auto;
     margin: 1.5rem;
+}
+
+.k-notification ul{
+    padding-inline-start: 15px;
+    margin: 0;
+}
+
+.k-notification h3 {
+    margin: 0;
+    padding: 0;
 }
 
 #rowSelectionButtons .k-button {
@@ -57,6 +73,10 @@ main {
     font-size: 1.8em;
     margin: 0 !important;
     margin-right: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 #myAppBarSpacer {
@@ -70,6 +90,7 @@ main {
 
 .myAppBarActionItem {
     margin-left: 15px;
+    white-space: nowrap;
 }
 
 .hidden {

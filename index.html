@@ -18,6 +18,7 @@
 </head>
 
 <body>
+    <span id="notification"></span>
     <header id="myAppBar">
         <img id="myAppBarLogo" src="images/syspro_logo.png" alt="Logo">
         <h1 id="myAppBarHeading">Grid Assignemnt - Riaan Swanepoel</h1>
@@ -26,8 +27,12 @@
             <div class="myAppBarActionItem">
                 <button class="k-primary k-button k-button-md k-rounded-md k-button-solid k-button-solid-base"
                     onclick="logSelected()">Log Selected</button>
-                    
-                <a href="https://github.com/RSCreated/syspro-assignment" target="_blank" rel="noopener noreferrer" class="k-primary k-button k-button-md k-rounded-md k-button-solid k-button-solid-base">Git Repository</a>
+                <button class="k-primary k-button k-button-md k-rounded-md k-button-solid k-button-solid-base"
+                    onclick="showSelected()">Show Selected</button>
+
+                <a href="https://github.com/RSCreated/syspro-assignment" target="_blank" rel="noopener noreferrer"
+                    class="k-primary k-button k-button-md k-rounded-md k-button-solid k-button-solid-base">Git
+                    Repository</a>
             </div>
         </div>
     </header>
@@ -39,6 +44,50 @@
         <div id="customerTabel" />
     </main>
     <script>
+        const showNotification = (message, type, position) => {
+            console.log('showing showNotification');
+
+            let instance = $("#notification").data("kendoNotification");
+
+            if (instance) {
+                instance.hide();
+            }
+
+            instance.show(message, type || "info");
+        }
+
+        const showSelected = () => {
+            // Gets the Kendo UI Grid and logs each selected row's name, invoice number, and DOM element.
+            const grid = $("#customerTabel").data("kendoGrid");
+            const selectedRows = grid.select();
+            let listContent = '<ul>';
+            let notificationType = "info";
+
+            if (selectedRows.length === 0) {
+                listContent += '<li><h3>No rows are currently selected.</h3></li>';
+                notificationType = "error";
+            } else {
+                let hasInvalidSelection = false;
+
+                selectedRows.each(function () {
+                    const row = $(this);
+                    const dataItem = grid.dataItem(row);
+
+                    if (dataItem) {
+                        listContent += `<li>${dataItem.customerName} - ${dataItem.invoiceNumber}</li>`;
+                    } else {
+                        listContent += `<li>Selected Row (No Data Item Found)</li>`;
+                        hasInvalidSelection = true;
+                    }
+                });
+                if (hasInvalidSelection) {
+                    notificationType = "warning";
+                }
+            }
+
+            listContent += '</ul>';
+            showNotification(listContent, notificationType);
+        };
 
         const logSelected = () => {
             // Gets the Kendo UI Grid and logs each selected row's name, invoice number, and DOM element.
@@ -132,6 +181,31 @@
         $(document).ready(function () {
             // Initializes the Kendo UI Grid with configurations and data.
             // Calls renderSelectionButtons on data binding and selection changes.
+            $("#notification").kendoNotification({
+                autoHideAfter: 6000,
+                allowHideAfter: 1000,
+                hideOnClick: false,
+                position: {
+                    right: 32,
+                    top: 16,
+                },
+                templates: [
+                    {
+                        type: "info",
+                        template: "#= content #"
+                    },
+                    {
+                        type: "warning",
+                        template: "#= content #"
+                    },
+                    {
+                        type: "error",
+                        template: "#= content #"
+                    }
+                ],
+                button: true,
+            }).data("kendoNotification");
+
             $('#customerTabel').kendoGrid({
                 ...CONFIG.gridConfig,
                 toolbar: {
