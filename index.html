@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Riaan Swanepoel - Kendo UI Grid with Bootstrap Theme</title>
+    <link rel="icon" href="images/syspro_favicon_32X32.png" sizes="32x32" />
+
+    <link rel="stylesheet" href="https://kendo.cdn.telerik.com/themes/10.4.0/bootstrap/bootstrap-main.css" />
+    <link rel="stylesheet" href="./src/style.css" />
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://kendo.cdn.telerik.com/2025.1.227/mjs/kendo.all.js" type="module"></script>
+
+    <script src="./src/utils.js"></script>
+    <script src="./src/dummyData.js"></script>
+    <script src="./src/config.js"></script>
+
+</head>
+
+<body>
+    <header id="myAppBar">
+        <img id="myAppBarLogo" src="images/syspro_logo.png" alt="Logo">
+        <h1 id="myAppBarHeading">Grid Assignemnt - Riaan Swanepoel</h1>
+        <div id="myAppBarSpacer"></div>
+        <div class="myAppBarActions">
+            <div class="myAppBarActionItem">
+                <button class="k-primary k-button k-button-md k-rounded-md k-button-solid k-button-solid-base"
+                    onclick="logSelected()">Log Selected</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="k-container k-gap-sm">
+            <div id="rowSelectionButtons" class="my-flex-row" />
+        </div>
+        <div id="customerTabel" />
+    </main>
+    <script>
+
+        const logSelected = () => {
+            // Gets the Kendo UI Grid and logs each selected row's name, invoice number, and DOM element.
+            const grid = $("#customerTabel").data("kendoGrid");
+            const selectedRows = grid.select();
+
+            selectedRows.each(function () {
+                const row = $(this);
+                const dataItem = grid.dataItem(row);
+
+                if (dataItem) {
+                    const customerName = dataItem.customerName;
+                    const invoiceNumber = dataItem.invoiceNumber;
+                    console.groupCollapsed("Selected Row: %s | %s", customerName, invoiceNumber);
+                    console.info("\tCustomer Name:", customerName);
+                    console.info("\tInvoice Number:", invoiceNumber);
+                    console.info("\tElement:", row[0]);
+                } else {
+                    console.warn("Selected Row (No Data Item Found):", row[0]);
+                }
+                console.groupEnd();
+            });
+
+            if (selectedRows.length === 0) {
+                console.warn("No rows are currently selected.");
+            }
+        };
+
+        const rowSelect = (e, grid, invoiceNr) => {
+            // Finds the corresponding row in the Kendo UI Grid based on the invoice number and toggles its selection
+            if (grid) {
+                const dataSource = grid.dataSource;
+                const rowData = dataSource.data().find(item => item.invoiceNumber === invoiceNr);
+                if (rowData) {
+                    const row = grid.table.find(`tr[data-uid="${rowData.uid}"]`);
+                    
+                    const isSelected = grid.selectedKeyNames().includes(invoiceNr.toString());
+                    
+                    if (isSelected) {
+                        const currentSelectedKeys = grid.selectedKeyNames().filter(key => key !== invoiceNr.toString());
+                        console.log('currentSelectedKeys', currentSelectedKeys);
+                        grid.clearSelection();
+                        if (currentSelectedKeys.length > 0) {
+                            currentSelectedKeys.forEach(key => {
+                                const dataItem = dataSource.data().find(item => item.invoiceNumber.toString() === key);
+                                if (dataItem) {
+                                    const rowToSelect = grid.table.find(`tr[data-uid="${dataItem.uid}"]`);
+                                    grid.select(rowToSelect);
+                                }
+                            });
+                        }
+                    } else {
+                        grid.select(row);
+                    }
+                    
+                    grid.trigger("change");
+                }
+            }
+        }
+
+        const renderSelectionButtons = () => {
+            // Clears existing buttons, gets grid data, creates a button for each item,
+            // attaches a click handler to select the grid row, and highlights selected row buttons.
+            const buttonsContainer = $('#rowSelectionButtons');
+            buttonsContainer.empty();
+
+            const grid = $('#customerTabel').data("kendoGrid");
+            var dataSource = grid.dataSource;
+            var dataInView = dataSource.view();
+            let selectedRows = grid.select();
+            var keyNames = grid.selectedKeyNames();
+
+            dataInView.sort((a, b) => a.invoiceNumber - b.invoiceNumber).map(item => {
+                let flexItem = $('<div class="my-flex-col-5"></div>');
+                let newButton = $('<button class="row-select-button k-button k-button-md k-rounded-md k-button-solid k-button-solid-base"></button>');
+                let buttonContent = $(`<div class="row-button-content">
+                        <span class="invoiceNumber">${item.invoiceNumber}</span>
+                        <span class="customerName">${item.customerName}</span>
+                    </div>`);
+
+                newButton.click((e) => {
+                    rowSelect(e, grid, item.invoiceNumber);
+                });
+                console.log('keyNames', keyNames);
+                if (keyNames.includes(item.invoiceNumber.toString())) {
+                    newButton.addClass('k-primary');
+                }
+
+                buttonsContainer.append(flexItem.append(newButton.append(buttonContent)));
+            });
+        }
+
+        $(document).ready(function () {
+            // Initializes the Kendo UI Grid with configurations and data.
+            // Calls renderSelectionButtons on data binding and selection changes.
+            $('#customerTabel').kendoGrid({
+                ...CONFIG.gridConfig,
+                toolbar: {
+                    items: ["search"],
+                    overflow: {
+                        mode: "menu",
+                    }
+                },
+                dataSource: {
+                    pageSize: CONFIG.pageSize,
+                    data: dummyData,
+                    sort: {
+                        field: "invoiceNumber",
+                        dir: "asc"
+                    },
+                    schema: {
+                        model: {
+                            id: 'invoiceNumber',
+                            fields: {
+                                invoiceNumber: { type: "number" },
+                                customerName: { type: "string" },
+                                totalAmount: { type: "number" },
+                                amountPaid: { type: "number" },
+                                outstandingBalance: { type: "number" },
+                                invoiceDate: { type: "date" },
+                                dueDate: { type: "date" },
+                                invoiceStatus: { type: "string" },
+                            }
+                        }
+                    },
+                },
+                dataBound(e) {
+                    renderSelectionButtons(dummyData);
+                },
+                change() {
+                    console.log(
+                        'change triggered'
+                    );
+                    renderSelectionButtons(dummyData);
+                }
+            });
+        });
+
+    </script>
+
+</body>
+
+</html>
