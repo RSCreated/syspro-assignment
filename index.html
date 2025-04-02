@@ -26,6 +26,8 @@
             <div class="myAppBarActionItem">
                 <button class="k-primary k-button k-button-md k-rounded-md k-button-solid k-button-solid-base"
                     onclick="logSelected()">Log Selected</button>
+                    
+                <a href="https://github.com/RSCreated/syspro-assignment" target="_blank" rel="noopener noreferrer" class="k-primary k-button k-button-md k-rounded-md k-button-solid k-button-solid-base">Git Repository</a>
             </div>
         </div>
     </header>
@@ -77,7 +79,6 @@
                     
                     if (isSelected) {
                         const currentSelectedKeys = grid.selectedKeyNames().filter(key => key !== invoiceNr.toString());
-                        console.log('currentSelectedKeys', currentSelectedKeys);
                         grid.clearSelection();
                         if (currentSelectedKeys.length > 0) {
                             currentSelectedKeys.forEach(key => {
@@ -120,7 +121,6 @@
                 newButton.click((e) => {
                     rowSelect(e, grid, item.invoiceNumber);
                 });
-                console.log('keyNames', keyNames);
                 if (keyNames.includes(item.invoiceNumber.toString())) {
                     newButton.addClass('k-primary');
                 }
@@ -167,9 +167,6 @@
                     renderSelectionButtons(dummyData);
                 },
                 change() {
-                    console.log(
-                        'change triggered'
-                    );
                     renderSelectionButtons(dummyData);
                 }
             });
