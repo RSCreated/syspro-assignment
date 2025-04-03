@@ -12,6 +12,7 @@ const CONFIG = {
             pageSizes: true,
         },
         sortable: true,
+        scrollable: { virtual: true },
         filterable: {
             mode: "row"
         },

@@ -3,10 +3,9 @@
 
 <head>
     <title>Riaan Swanepoel - Kendo UI Grid with Bootstrap Theme</title>
-    <link rel="icon" href="images/syspro_favicon_32X32.png" sizes="32x32" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="stylesheet" href="https://kendo.cdn.telerik.com/themes/10.4.0/bootstrap/bootstrap-main.css" />
-    <link rel="stylesheet" href="./src/style.css" />
+    <link rel="icon" href="images/syspro_favicon_32X32.png" sizes="32x32" />
 
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://kendo.cdn.telerik.com/2025.1.227/mjs/kendo.all.js" type="module"></script>
@@ -15,24 +14,37 @@
     <script src="./src/dummyData.js"></script>
     <script src="./src/config.js"></script>
 
+    <link rel="stylesheet" href="https://kendo.cdn.telerik.com/themes/10.4.0/bootstrap/bootstrap-main.css" />
+    <link rel="stylesheet" href="./src/style.css" />
+    <link rel="stylesheet" href="./src/style.mobile.css" />
+
 </head>
 
 <body>
     <span id="notification"></span>
     <header id="myAppBar">
-        <img id="myAppBarLogo" src="images/syspro_logo.png" alt="Logo">
-        <h1 id="myAppBarHeading">Grid Assignemnt - Riaan Swanepoel</h1>
+        <div id="myAppBarHeadingLeft">
+            <img id="myAppBarLogo-desktop" src="images/syspro_logo.png" alt="Logo">
+            <img id="myAppBarLogo-mobile" src="images/syspro_favicon_32X32.png" alt="Logo">
+            <h1 id="myAppBarHeading">Grid Assignemnt - Riaan Swanepoel</h1>
+        </div>
         <div id="myAppBarSpacer"></div>
-        <div class="myAppBarActions">
-            <div class="myAppBarActionItem">
-                <button class="k-primary k-button k-button-md k-rounded-md k-button-solid k-button-solid-base"
-                    onclick="logSelected()">Log Selected</button>
-                <button class="k-primary k-button k-button-md k-rounded-md k-button-solid k-button-solid-base"
-                    onclick="showSelected()">Show Selected</button>
+        <div id="myAppBarHeadingRight">
+            <div class="myAppBarActions">
+                <div class="myAppBarActionItem">
+                    <button class="k-primary k-button k-button-md k-rounded-md k-button-solid k-button-solid-base"
+                        onclick="logSelected()">Log Selected</button>
+                </div>
+                <div class="myAppBarActionItem">
+                    <button class="k-primary k-button k-button-md k-rounded-md k-button-solid k-button-solid-base"
+                        onclick="showSelected()">Show Selected</button>
+                </div>
 
-                <a href="https://github.com/RSCreated/syspro-assignment" target="_blank" rel="noopener noreferrer"
-                    class="k-primary k-button k-button-md k-rounded-md k-button-solid k-button-solid-base">Git
-                    Repository</a>
+                <div class="myAppBarActionItem">
+                    <a href="https://github.com/RSCreated/syspro-assignment" target="_blank" rel="noopener noreferrer"
+                        class="k-primary k-button k-button-md k-rounded-md k-button-solid k-button-solid-base">Git
+                        Repository</a>
+                </div>
             </div>
         </div>
     </header>
@@ -123,9 +135,9 @@
                 const rowData = dataSource.data().find(item => item.invoiceNumber === invoiceNr);
                 if (rowData) {
                     const row = grid.table.find(`tr[data-uid="${rowData.uid}"]`);
-                    
+
                     const isSelected = grid.selectedKeyNames().includes(invoiceNr.toString());
-                    
+
                     if (isSelected) {
                         const currentSelectedKeys = grid.selectedKeyNames().filter(key => key !== invoiceNr.toString());
                         grid.clearSelection();
@@ -141,7 +153,7 @@
                     } else {
                         grid.select(row);
                     }
-                    
+
                     grid.trigger("change");
                 }
             }
