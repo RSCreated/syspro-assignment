@@ -56,6 +56,31 @@
         <div id="customerTabel" />
     </main>
     <script>
+
+        let globalSelectedItems = {};
+
+        const toggleSelectedItems = () => {
+
+            const grid = $('#customerTabel').data("kendoGrid");
+            var dataSource = grid.dataSource;
+            var dataInView = dataSource.view();
+            let selectedRows = grid.select();
+
+            var currentPage = dataSource.page();
+            let rowData = [];
+            selectedRows.each(function () {
+                const row = $(this);
+                const dataItem = grid.dataItem(row);
+                rowData.push(dataItem);
+            });
+
+            if(rowData.length === 0) {
+                delete globalSelectedItems[currentPage];
+            } else {
+                globalSelectedItems[currentPage] = rowData;
+            }
+        }
+
         const showNotification = (message, type, position) => {
             console.log('showing showNotification');
 
@@ -69,66 +94,87 @@
         }
 
         const showSelected = () => {
-            // Gets the Kendo UI Grid and logs each selected row's name, invoice number, and DOM element.
-            const grid = $("#customerTabel").data("kendoGrid");
-            const selectedRows = grid.select();
-            let listContent = '<ul>';
+            // Shows each selected row's name, invoice number.
             let notificationType = "info";
+            let list = '<div class="selected-list-container">';
 
-            if (selectedRows.length === 0) {
-                listContent += '<li><h3>No rows are currently selected.</h3></li>';
+            if (Object.keys(globalSelectedItems).length === 0) {
+                list += '<h3>No rows are currently selected.</h3>';
                 notificationType = "error";
             } else {
                 let hasInvalidSelection = false;
 
-                selectedRows.each(function () {
-                    const row = $(this);
-                    const dataItem = grid.dataItem(row);
+                Object.keys(globalSelectedItems).forEach(page => {
+                    let heading = `<h4>Page: ${page}</h4>`;
+                    list += heading;
+                    let listContent = '<ul>';
+                    
+                    const rowData = globalSelectedItems[page];
 
-                    if (dataItem) {
-                        listContent += `<li>${dataItem.customerName} - ${dataItem.invoiceNumber}</li>`;
-                    } else {
-                        listContent += `<li>Selected Row (No Data Item Found)</li>`;
-                        hasInvalidSelection = true;
-                    }
+                    rowData.forEach((row) => {
+                        if (row) {
+                            listContent += `<li>${row.invoiceNumber} - ${row.customerName}</li>`;
+                        } else {
+                            listContent += `<li>Selected Row (No Data Item Found)</li>`;
+                            hasInvalidSelection = true;
+                        }
+                    });
+                    list += listContent;
+                    list += '</ul>';
                 });
+
                 if (hasInvalidSelection) {
                     notificationType = "warning";
                 }
             }
 
-            listContent += '</ul>';
-            showNotification(listContent, notificationType);
+            list += '</div>';
+            showNotification(list, notificationType);
+            
         };
 
         const logSelected = () => {
-            // Gets the Kendo UI Grid and logs each selected row's name, invoice number, and DOM element.
+            // Gets the Kendo UI Grid and logs each selected row's name, invoice number, and DOM element,
             const grid = $("#customerTabel").data("kendoGrid");
             const selectedRows = grid.select();
+            let loggedSomething = false;
 
-            selectedRows.each(function () {
-                const row = $(this);
-                const dataItem = grid.dataItem(row);
-
-                if (dataItem) {
-                    const customerName = dataItem.customerName;
-                    const invoiceNumber = dataItem.invoiceNumber;
-                    console.groupCollapsed("Selected Row: %s | %s", customerName, invoiceNumber);
-                    console.info("\tCustomer Name:", customerName);
-                    console.info("\tInvoice Number:", invoiceNumber);
-                    console.info("\tElement:", row[0]);
-                } else {
-                    console.warn("Selected Row (No Data Item Found):", row[0]);
-                }
-                console.groupEnd();
-            });
-
-            if (selectedRows.length === 0) {
+            if (Object.keys(globalSelectedItems).length === 0) {
                 console.warn("No rows are currently selected.");
+            } else {
+                Object.keys(globalSelectedItems).forEach(page => {
+                    const rowData = globalSelectedItems[page];
+                    if (rowData && rowData.length > 0) {
+                        console.group(`Page: ${page}`);
+                        rowData.forEach((row) => {
+                            if (row) {
+                                console.groupCollapsed(`${row.invoiceNumber} - ${row.customerName}`);
+                                console.info("Customer Name:", row.customerName);
+                                console.info("Invoice Number:", row.invoiceNumber);
+
+                                selectedRows.each(function () {
+                                    const $row = $(this);
+                                    if (grid.dataItem($row) === row) {
+                                        console.info("Element:", $row[0]);
+                                    }
+                                });
+                                console.groupEnd();
+                                loggedSomething = true;
+                            } else {
+                                console.warn("Selected Row (No Data Item Found)");
+                                loggedSomething = true;
+                            }
+                        });
+                        console.groupEnd();
+                    }
+                });
+            }
+
+            if (!loggedSomething && Object.keys(globalSelectedItems).length > 0) {
+                console.warn("No valid selected row data found in globalSelectedItems.");
             }
         };
-
-        const rowSelect = (e, grid, invoiceNr) => {
+    const rowSelect = (e, grid, invoiceNr) => {
             // Finds the corresponding row in the Kendo UI Grid based on the invoice number and toggles its selection
             if (grid) {
                 const dataSource = grid.dataSource;
@@ -254,6 +300,7 @@
                 },
                 change() {
                     renderSelectionButtons();
+                    toggleSelectedItems();
                 }
             });
         });

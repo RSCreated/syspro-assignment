@@ -143,3 +143,13 @@ main {
     padding-inline: var(--kendo-spacing-3, 0.75rem);
     flex-grow: 1;
 }
+
+.selected-list-container {
+    display: flex;
+    flex-direction: column;
+}
+.selected-list-container h4 {
+    margin: 0;
+    padding: 0;
+    text-decoration: underline;
+}
